@@ -60,6 +60,6 @@ This project achieves strong predictive performance, highlighting the most criti
 
 ### Acknowledgments  
 - Dataset Source: Kaggle Red Wine Quality 
-- Collaboration: Many thanks to (B Banu Varshit) https://github.com/Banu430 for her contributions.  
+- Collaboration: Many thanks to (B Banu Varshit) https://github.com/Banu430 for his contributions.  
 
 We welcome contributions and feedback! 🎉
