@@ -46,7 +46,8 @@ The **Wine Quality Prediction** project aims to predict wine quality based on it
 ---
 
 ### Results  
-This project achieves strong predictive performance, highlighting the most critical features influencing wine quality.  
+This project achieves strong predictive performance, highlighting the most critical features influencing wine quality. 
+
 
 ---
 
