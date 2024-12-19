@@ -2,6 +2,7 @@
 wine_dataset = readtable('/MATLAB Drive/archive (1)/winequality-red.csv');
 % path of dataset
 
+
 % Display column names to verify them
 disp('Column Names:');
 #column names displayed
@@ -15,6 +16,7 @@ quality_column = wine_dataset.Properties.VariableNames{end};
 % Update if required
 citric_acid_column = wine_dataset.Properties.VariableNames{3};
 % Update if required
+
 
 % Dataset shape
 disp('Dataset Shape:');
@@ -32,6 +34,7 @@ disp(sum(ismissing(wine_dataset)));
 disp('Dataset Summary:');
 disp(summary(wine_dataset));
 
+
 % Plotting the count of wine quality
 figure;
 categories = categorical(wine_dataset.(quality_column));
@@ -40,6 +43,7 @@ histogram(categories);
 xlabel('Quality');
 ylabel('Count');
 title('Count of Wine Quality');
+
 
 % Plotting bar charts for volatile acidity vs. quality
 figure;
@@ -62,6 +66,7 @@ correlation = corr(table2array(wine_dataset(:, 1:end-1)));
 figure;
 heatmap(correlation, 'Colormap', parula, 'ColorbarVisible', 'on');
 title('Correlation Matrix');
+
 
 % Splitting features (X) and target (y)
 X = wine_dataset(:, 1:end-1);
