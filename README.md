@@ -1,0 +1,135 @@
+WINE QUALITY PREDICTION
+
+
+import numpy as np
+
+import pandas as pd
+
+import matplotlib.pyplot as plt
+
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.metrics import accuracy_score
+
+
+Data Collection
+
+#loading dataset to a panda dataframe
+
+wine_dataset = pd.read_csv( "/content/winequality-red.csv" ) #dataset path
+
+#number of rows and columns
+
+wine_dataset.shape
+
+#first five rows
+
+wine_dataset.head()
+
+#checking missing values
+
+wine_dataset.isnull().sum()
+
+
+Data Analysis and Visualization
+
+#statistical measures
+
+wine_dataset.describe()
+
+#no. of values for each quality
+
+sns.catplot(x='quality' , data = wine_dataset , kind = 'count')
+
+#volatile acidity vs quality
+
+plot = plt.figure(figsize=  (5,5))
+
+sns.barplot( x ='quality' , y = 'volatile acidity' , data=wine_dataset)
+
+#citric acid vs Quality
+
+plot = plt.figure(figsize=  (5,5))
+
+sns.barplot( x ='quality' , y = 'citric acid' , data=wine_dataset)
+
+
+Correlation
+
+correlation = wine_dataset.corr()
+
+#heat map for correlation between colums
+
+plt.figure(figsize=(10,10))
+
+sns.heatmap(correlation,cbar=True,square=True,fmt='.1f',annot=True,annot_kws={'size':8},cmap='Blues')
+
+
+Data Pre-Processing
+
+#seperate data and label
+
+x = wine_dataset.drop('quality', axis=1)
+
+print(x)
+
+
+Label Binarization
+
+y = wine_dataset['quality'].apply(lambda y_value :1 if y_value>=7 else 0)
+
+print(y)
+
+
+Training and testing data
+
+x_train, x_test, y_train, y_test = train_test_split(x , y ,test_size = 0.2, random_state=3)
+
+print(y.shape , y_train.shape , y_test.shape )
+
+
+Model Training Random Forest Classifier
+
+model = RandomForestClassifier()
+
+model.fit(x_train,y_train)
+
+
+Model Evaluation
+
+#Accuracy Score Values
+
+X_test_prediction = model.predict(x_test)
+
+test_data_accuracy = accuracy_score(X_test_prediction, y_test)
+
+print('Accuracy :' , test_data_accuracy)
+
+
+Building a Predictive System
+
+input_data = (7.4,0.66,0.0,1.8,0.075,13.0,40.0,0.9978,3.51,0.56,9.4)
+
+#changing input data to numpy array
+
+input_data_as_numpy_array = np.asarray(input_data)
+
+#reshape the data for only one instance
+
+input_data_reshaped = input_data_as_numpy_array.reshape(1,-1)
+
+prediction = model.predict(input_data_reshaped)
+
+print(prediction)
+
+if (prediction[0]==1):
+
+  print(' good quality wine ')
+  
+else:
+
+  print(' bad quality wine ')
