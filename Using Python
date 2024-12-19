@@ -1,6 +1,7 @@
 WINE QUALITY PREDICTION
 
 
+#importing needed libraires
 import numpy as np
 
 import pandas as pd
@@ -12,6 +13,7 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 
 from sklearn.ensemble import RandomForestClassifier
+# using random forest model for prediction
 
 from sklearn.metrics import accuracy_score
 
@@ -58,6 +60,7 @@ plot = plt.figure(figsize=  (5,5))
 sns.barplot( x ='quality' , y = 'citric acid' , data=wine_dataset)
 
 
+
 Correlation
 
 correlation = wine_dataset.corr()
@@ -69,6 +72,7 @@ plt.figure(figsize=(10,10))
 sns.heatmap(correlation,cbar=True,square=True,fmt='.1f',annot=True,annot_kws={'size':8},cmap='Blues')
 
 
+
 Data Pre-Processing
 
 #seperate data and label
@@ -78,11 +82,13 @@ x = wine_dataset.drop('quality', axis=1)
 print(x)
 
 
+
 Label Binarization
 
 y = wine_dataset['quality'].apply(lambda y_value :1 if y_value>=7 else 0)
 
 print(y)
+
 
 
 Training and testing data
@@ -92,11 +98,13 @@ x_train, x_test, y_train, y_test = train_test_split(x , y ,test_size = 0.2, rand
 print(y.shape , y_train.shape , y_test.shape )
 
 
+
 Model Training Random Forest Classifier
 
 model = RandomForestClassifier()
 
 model.fit(x_train,y_train)
+
 
 
 Model Evaluation
@@ -110,9 +118,11 @@ test_data_accuracy = accuracy_score(X_test_prediction, y_test)
 print('Accuracy :' , test_data_accuracy)
 
 
+
 Building a Predictive System
 
 input_data = (7.4,0.66,0.0,1.8,0.075,13.0,40.0,0.9978,3.51,0.56,9.4)
+#a set of attributes from original dataset
 
 #changing input data to numpy array
 
@@ -126,6 +136,7 @@ prediction = model.predict(input_data_reshaped)
 
 print(prediction)
 
+#prediction result
 if (prediction[0]==1):
 
   print(' good quality wine ')
