@@ -1,0 +1,88 @@
+% Load the dataset
+wine_dataset = readtable('/MATLAB Drive/archive (1)/winequality-red.csv');
+
+% Display column names to verify them
+disp('Column Names:');
+disp(wine_dataset.Properties.VariableNames);
+
+% Assuming the actual column names are as follows, update them dynamically:
+volatile_acidity_column = wine_dataset.Properties.VariableNames{2}; % Update if required
+quality_column = wine_dataset.Properties.VariableNames{end}; % Update if required
+citric_acid_column = wine_dataset.Properties.VariableNames{3}; % Update if required
+
+% Dataset shape
+disp('Dataset Shape:');
+disp(size(wine_dataset));
+
+% Display the first few rows
+disp('First Few Rows:');
+disp(head(wine_dataset));
+
+% Check for missing values
+disp('Missing Values:');
+disp(sum(ismissing(wine_dataset)));
+
+% Dataset description (summary)
+disp('Dataset Summary:');
+disp(summary(wine_dataset));
+
+% Plotting the count of wine quality
+figure;
+categories = categorical(wine_dataset.(quality_column));
+histogram(categories);
+xlabel('Quality');
+ylabel('Count');
+title('Count of Wine Quality');
+
+% Plotting bar charts for volatile acidity vs. quality
+figure;
+volatile_acidity = grpstats(wine_dataset.(volatile_acidity_column), wine_dataset.(quality_column), 'mean');
+bar(unique(wine_dataset.(quality_column)), volatile_acidity);
+xlabel('Quality');
+ylabel('Mean Volatile Acidity');
+title('Quality vs. Volatile Acidity');
+
+% Plotting bar charts for citric acid vs. quality
+figure;
+citric_acid = grpstats(wine_dataset.(citric_acid_column), wine_dataset.(quality_column), 'mean');
+bar(unique(wine_dataset.(quality_column)), citric_acid);
+xlabel('Quality');
+ylabel('Mean Citric Acid');
+title('Quality vs. Citric Acid');
+
+% Correlation matrix
+correlation = corr(table2array(wine_dataset(:, 1:end-1)));
+figure;
+heatmap(correlation, 'Colormap', parula, 'ColorbarVisible', 'on');
+title('Correlation Matrix');
+
+% Splitting features (X) and target (y)
+X = wine_dataset(:, 1:end-1);
+y = wine_dataset.(quality_column) >= 7; % Binary classification: 1 for good, 0 for bad
+
+% Splitting data into train and test sets
+cv = cvpartition(height(wine_dataset), 'HoldOut', 0.2);
+x_train = X(training(cv), :);
+x_test = X(test(cv), :);
+y_train = y(training(cv), :);
+y_test = y(test(cv), :);
+
+% Train Random Forest model
+model = TreeBagger(100, table2array(x_train), y_train, 'Method', 'classification');
+
+% Predicting on the test set
+X_test_prediction = str2double(predict(model, table2array(x_test)));
+
+% Calculate accuracy
+test_data_accuracy = sum(X_test_prediction == y_test) / length(y_test);
+disp(['Accuracy: ', num2str(test_data_accuracy)]);
+
+% Predicting a single input instance
+input_data = [7.4, 0.66, 0.0, 1.8, 0.075, 13.0, 40.0, 0.9978, 3.51, 0.56, 9.4];
+prediction = str2double(predict(model, input_data));
+
+if prediction == 1
+    disp('Good quality wine');
+else
+    disp('Bad quality wine');
+end
