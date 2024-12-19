@@ -1,14 +1,20 @@
 % Load the dataset
 wine_dataset = readtable('/MATLAB Drive/archive (1)/winequality-red.csv');
+% path of dataset
 
 % Display column names to verify them
 disp('Column Names:');
+#column names displayed
 disp(wine_dataset.Properties.VariableNames);
 
 % Assuming the actual column names are as follows, update them dynamically:
-volatile_acidity_column = wine_dataset.Properties.VariableNames{2}; % Update if required
-quality_column = wine_dataset.Properties.VariableNames{end}; % Update if required
-citric_acid_column = wine_dataset.Properties.VariableNames{3}; % Update if required
+volatile_acidity_column = wine_dataset.Properties.VariableNames{2}; 
+% Update if required
+quality_column = wine_dataset.Properties.VariableNames{end}; 
+
+% Update if required
+citric_acid_column = wine_dataset.Properties.VariableNames{3};
+% Update if required
 
 % Dataset shape
 disp('Dataset Shape:');
@@ -30,6 +36,7 @@ disp(summary(wine_dataset));
 figure;
 categories = categorical(wine_dataset.(quality_column));
 histogram(categories);
+
 xlabel('Quality');
 ylabel('Count');
 title('Count of Wine Quality');
@@ -62,8 +69,10 @@ y = wine_dataset.(quality_column) >= 7; % Binary classification: 1 for good, 0 f
 
 % Splitting data into train and test sets
 cv = cvpartition(height(wine_dataset), 'HoldOut', 0.2);
+% train and test for x
 x_train = X(training(cv), :);
 x_test = X(test(cv), :);
+% train and test for y
 y_train = y(training(cv), :);
 y_test = y(test(cv), :);
 
@@ -75,12 +84,15 @@ X_test_prediction = str2double(predict(model, table2array(x_test)));
 
 % Calculate accuracy
 test_data_accuracy = sum(X_test_prediction == y_test) / length(y_test);
+
+% accuracy test
 disp(['Accuracy: ', num2str(test_data_accuracy)]);
 
 % Predicting a single input instance
 input_data = [7.4, 0.66, 0.0, 1.8, 0.075, 13.0, 40.0, 0.9978, 3.51, 0.56, 9.4];
 prediction = str2double(predict(model, input_data));
 
+%prediction result
 if prediction == 1
     disp('Good quality wine');
 else
