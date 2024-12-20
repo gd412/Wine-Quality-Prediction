@@ -1,105 +1,167 @@
 % Load the dataset
 wine_dataset = readtable('/MATLAB Drive/archive (1)/winequality-red.csv');
-% path of dataset
-
 
 % Display column names to verify them
 disp('Column Names:');
-#column names displayed
 disp(wine_dataset.Properties.VariableNames);
 
 % Assuming the actual column names are as follows, update them dynamically:
-volatile_acidity_column = wine_dataset.Properties.VariableNames{2}; 
-% Update if required
-quality_column = wine_dataset.Properties.VariableNames{end}; 
+volatile_acidity_column = wine_dataset.Properties.VariableNames{2}; % Update if required
+quality_column = wine_dataset.Properties.VariableNames{end}; % Update if required
+citric_acid_column = wine_dataset.Properties.VariableNames{3}; % Update if required
 
-% Update if required
-citric_acid_column = wine_dataset.Properties.VariableNames{3};
-% Update if required
-
-
-% Dataset shape
+% Display dataset shape (rows and columns)
 disp('Dataset Shape:');
 disp(size(wine_dataset));
 
-% Display the first few rows
+% Display the first few rows of the dataset for initial inspection
 disp('First Few Rows:');
 disp(head(wine_dataset));
 
 % Check for missing values
 disp('Missing Values:');
-disp(sum(ismissing(wine_dataset)));
+missing_values = sum(ismissing(wine_dataset));
+disp(missing_values);
 
-% Dataset description (summary)
+% Dataset description (summary statistics)
 disp('Dataset Summary:');
 disp(summary(wine_dataset));
 
-
+% Exploratory Data Analysis: Visualization
 % Plotting the count of wine quality
 figure;
 categories = categorical(wine_dataset.(quality_column));
 histogram(categories);
-
 xlabel('Quality');
 ylabel('Count');
 title('Count of Wine Quality');
+grid on;
 
-
-% Plotting bar charts for volatile acidity vs. quality
+% Bar chart: Mean Volatile Acidity vs. Quality
 figure;
 volatile_acidity = grpstats(wine_dataset.(volatile_acidity_column), wine_dataset.(quality_column), 'mean');
-bar(unique(wine_dataset.(quality_column)), volatile_acidity);
+bar(unique(wine_dataset.(quality_column)), volatile_acidity, 'FaceColor', 'cyan');
 xlabel('Quality');
 ylabel('Mean Volatile Acidity');
 title('Quality vs. Volatile Acidity');
+grid on;
 
-% Plotting bar charts for citric acid vs. quality
+% Bar chart: Mean Citric Acid vs. Quality
 figure;
 citric_acid = grpstats(wine_dataset.(citric_acid_column), wine_dataset.(quality_column), 'mean');
-bar(unique(wine_dataset.(quality_column)), citric_acid);
+bar(unique(wine_dataset.(quality_column)), citric_acid, 'FaceColor', 'magenta');
 xlabel('Quality');
 ylabel('Mean Citric Acid');
 title('Quality vs. Citric Acid');
+grid on;
 
-% Correlation matrix
+% Pairwise scatter plots for selected features
+disp('Generating pairwise scatter plots...');
+figure;
+selected_features = {'volatile_acidity', 'citric_acid', 'alcohol', 'pH', 'density'};
+plotmatrix(table2array(wine_dataset(:, selected_features)));
+title('Pairwise Scatter Plots for Selected Features');
+
+% Correlation matrix heatmap
+disp('Generating correlation matrix...');
 correlation = corr(table2array(wine_dataset(:, 1:end-1)));
 figure;
 heatmap(correlation, 'Colormap', parula, 'ColorbarVisible', 'on');
-title('Correlation Matrix');
+title('Correlation Matrix of Features');
 
+% Feature-target relationship visualization (boxplots)
+disp('Visualizing feature-target relationships...');
+figure;
+for i = 1:5
+    subplot(3, 2, i);
+    boxplot(wine_dataset{:, i}, wine_dataset.(quality_column));
+    xlabel('Quality');
+    ylabel(wine_dataset.Properties.VariableNames{i});
+    title(['Quality vs. ', wine_dataset.Properties.VariableNames{i}]);
+end
 
 % Splitting features (X) and target (y)
 X = wine_dataset(:, 1:end-1);
-y = wine_dataset.(quality_column) >= 7; % Binary classification: 1 for good, 0 for bad
+y = wine_dataset.(quality_column) >= 7; % Binary classification: Good quality (1) vs Bad (0)
 
-% Splitting data into train and test sets
+% Splitting the data into training and test sets
+disp('Splitting dataset into train and test sets...');
 cv = cvpartition(height(wine_dataset), 'HoldOut', 0.2);
-% train and test for x
 x_train = X(training(cv), :);
 x_test = X(test(cv), :);
-% train and test for y
 y_train = y(training(cv), :);
 y_test = y(test(cv), :);
 
-% Train Random Forest model
-model = TreeBagger(100, table2array(x_train), y_train, 'Method', 'classification');
+% Train a Random Forest model with 100 trees
+disp('Training the Random Forest model...');
+model = TreeBagger(100, table2array(x_train), y_train, 'Method', 'classification', 'OOBPrediction', 'on');
+
+% Plot OOB error to analyze model performance
+disp('Plotting OOB error...');
+figure;
+oobErrorBaggedEnsemble = oobError(model);
+plot(oobErrorBaggedEnsemble);
+xlabel('Number of Grown Trees');
+ylabel('Out-of-Bag Classification Error');
+title('OOB Error for Random Forest');
+
+% Feature importance analysis
+disp('Analyzing feature importance...');
+feature_importance = model.OOBPermutedPredictorDeltaError;
+figure;
+bar(feature_importance);
+xticks(1:width(x_train));
+xticklabels(wine_dataset.Properties.VariableNames(1:end-1));
+xtickangle(45);
+ylabel('Importance');
+title('Feature Importance Analysis');
 
 % Predicting on the test set
+disp('Predicting on the test set...');
 X_test_prediction = str2double(predict(model, table2array(x_test)));
 
-% Calculate accuracy
+% Calculate and display accuracy
+disp('Calculating model accuracy...');
 test_data_accuracy = sum(X_test_prediction == y_test) / length(y_test);
-
-% accuracy test
 disp(['Accuracy: ', num2str(test_data_accuracy)]);
 
+% Confusion matrix
+disp('Displaying confusion matrix...');
+figure;
+confusionchart(y_test, X_test_prediction);
+title('Confusion Matrix');
+
 % Predicting a single input instance
+disp('Predicting for a new instance...');
 input_data = [7.4, 0.66, 0.0, 1.8, 0.075, 13.0, 40.0, 0.9978, 3.51, 0.56, 9.4];
 prediction = str2double(predict(model, input_data));
 
-%prediction result
+% Display prediction result
 if prediction == 1
-    disp('Good quality wine');
+    disp('Prediction: Good quality wine');
 else
-    disp('Bad quality wine');
+    disp('Prediction: Bad quality wine');
 end
+
+% Hyperparameter tuning for Random Forest
+disp('Hyperparameter tuning for Random Forest...');
+num_trees = [50, 100, 150];
+accuracies = zeros(size(num_trees));
+
+for i = 1:length(num_trees)
+    tuned_model = TreeBagger(num_trees(i), table2array(x_train), y_train, 'Method', 'classification');
+    tuned_prediction = str2double(predict(tuned_model, table2array(x_test)));
+    accuracies(i) = sum(tuned_prediction == y_test) / length(y_test);
+end
+
+% Plot accuracy vs. number of trees
+figure;
+plot(num_trees, accuracies, '-o', 'LineWidth', 2);
+xlabel('Number of Trees');
+ylabel('Accuracy');
+title('Accuracy vs. Number of Trees in Random Forest');
+grid on;
+
+% Save the trained model for future use
+disp('Saving the trained model...');
+save('random_forest_wine_quality_model.mat', 'model');
