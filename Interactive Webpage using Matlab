@@ -4,9 +4,13 @@ function wine_quality_predictor()
     % It creates a user interface (UI) for entering wine characteristics and displays predictions.
 
 
+
+
     %% Load the Dataset
     % Load the wine dataset from the specified path
     wine_dataset = readtable('/MATLAB Drive/archive (1)/winequality-red.csv');
+
+
 
 
     %% Prepare Data for Modeling
@@ -17,6 +21,8 @@ function wine_quality_predictor()
     y = wine_dataset.(quality_column) >= 7; % Target column
 
 
+
+
     %% Split Data into Train and Test Sets
     % Use a HoldOut partition to split data for training and testing
     cv = cvpartition(height(wine_dataset), 'HoldOut', 0.2);
@@ -24,14 +30,20 @@ function wine_quality_predictor()
     y_train = y(training(cv), :);
 
 
+
+
     %% Train the Random Forest Model
     % Train a Random Forest model using 100 trees
     model = TreeBagger(100, table2array(x_train), y_train, 'Method', 'classification');
 
 
+
+
     %% Create the User Interface (UI)
     % Initialize the main UI figure window
     fig = uifigure('Position', [100, 100, 400, 550], 'Name', 'Wine Quality Predictor');
+
+
 
 
     %% Add Input Fields for Wine Features
@@ -41,7 +53,9 @@ function wine_quality_predictor()
         'Free Sulfur Dioxide', 'Total Sulfur Dioxide', 'Density', 'pH', 'Sulphates', 'Alcohol'
     };
 
-    
+
+
+
     featureFields = cell(1, length(featureNames));
     startY = 500;
     for i = 1:length(featureNames)
@@ -51,6 +65,8 @@ function wine_quality_predictor()
     end
 
 
+
+
     %% Add Prediction Button
     % Button to trigger the prediction process
     predictButton = uibutton(fig, 'push', 'Text', 'Predict Quality', ...
@@ -58,9 +74,13 @@ function wine_quality_predictor()
         'ButtonPushedFcn', @(btn, event) predictWineQuality());
 
 
+
+
     %% Add Result Display Area
     % Label to display the prediction result
     resultLabel = uilabel(fig, 'Position', [20, 10, 360, 30], 'Text', 'Prediction Result: ');
+
+
 
 
     %% Nested Function for Prediction
@@ -81,6 +101,8 @@ function wine_quality_predictor()
         end
 
 
+
+
         % Predict using the trained model
         prediction = str2double(predict(model, input_data));
 
@@ -93,9 +115,13 @@ function wine_quality_predictor()
     end
 
 
+
+
     %% Instructions for Users
     % Add a label to guide users
     uilabel(fig, 'Position', [20, 520, 360, 22], 'Text', 'Enter wine features and click Predict Quality.', 'FontWeight', 'bold');
+
+
 
 
     %% Additional Features
@@ -105,9 +131,13 @@ function wine_quality_predictor()
     % 3. Enable loading new datasets dynamically.
 
 
+
+
     %% Input Validation Details
     % Provide additional guidance for correct input ranges
     rangesLabel = uilabel(fig, 'Position', [20, 480, 360, 22], 'Text', 'Input values must be within realistic ranges for wine features.', 'FontAngle', 'italic');
+
+
 
 
     %% Placeholder for Future Model Comparison
