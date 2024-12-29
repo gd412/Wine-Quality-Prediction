@@ -1,0 +1,120 @@
+function wine_quality_predictor()
+    % WINE QUALITY PREDICTOR
+    % This script uses a Random Forest model to predict wine quality based on input features.
+    % It creates a user interface (UI) for entering wine characteristics and displays predictions.
+
+
+    %% Load the Dataset
+    % Load the wine dataset from the specified path
+    wine_dataset = readtable('/MATLAB Drive/archive (1)/winequality-red.csv');
+
+
+    %% Prepare Data for Modeling
+    % Extract feature matrix (X) and target vector (y)
+    % Binary classification: Good quality (>=7) vs. Bad quality (<7)
+    quality_column = wine_dataset.Properties.VariableNames{end};
+    X = wine_dataset(:, 1:end-1); % Feature columns
+    y = wine_dataset.(quality_column) >= 7; % Target column
+
+
+    %% Split Data into Train and Test Sets
+    % Use a HoldOut partition to split data for training and testing
+    cv = cvpartition(height(wine_dataset), 'HoldOut', 0.2);
+    x_train = X(training(cv), :);
+    y_train = y(training(cv), :);
+
+
+    %% Train the Random Forest Model
+    % Train a Random Forest model using 100 trees
+    model = TreeBagger(100, table2array(x_train), y_train, 'Method', 'classification');
+
+
+    %% Create the User Interface (UI)
+    % Initialize the main UI figure window
+    fig = uifigure('Position', [100, 100, 400, 550], 'Name', 'Wine Quality Predictor');
+
+
+    %% Add Input Fields for Wine Features
+    % Define labels and fields for each feature
+    featureNames = {
+        'Fixed Acidity', 'Volatile Acidity', 'Citric Acid', 'Residual Sugar', 'Chlorides', ...
+        'Free Sulfur Dioxide', 'Total Sulfur Dioxide', 'Density', 'pH', 'Sulphates', 'Alcohol'
+    };
+
+    
+    featureFields = cell(1, length(featureNames));
+    startY = 500;
+    for i = 1:length(featureNames)
+        uilabel(fig, 'Position', [20, startY, 120, 22], 'Text', featureNames{i});
+        featureFields{i} = uieditfield(fig, 'numeric', 'Position', [150, startY, 100, 22]);
+        startY = startY - 30;
+    end
+
+
+    %% Add Prediction Button
+    % Button to trigger the prediction process
+    predictButton = uibutton(fig, 'push', 'Text', 'Predict Quality', ...
+        'Position', [150, 50, 100, 30], ...
+        'ButtonPushedFcn', @(btn, event) predictWineQuality());
+
+
+    %% Add Result Display Area
+    % Label to display the prediction result
+    resultLabel = uilabel(fig, 'Position', [20, 10, 360, 30], 'Text', 'Prediction Result: ');
+
+
+    %% Nested Function for Prediction
+    % This function gathers user input, validates it, and makes a prediction
+    function predictWineQuality()
+        % Collect input data from UI fields
+        input_data = zeros(1, length(featureFields));
+        for j = 1:length(featureFields)
+            value = featureFields{j}.Value;
+
+            % Validate that all fields are filled
+            if isempty(value)
+                resultLabel.Text = sprintf('Error: %s is required.', featureNames{j});
+                return;
+            end
+
+            input_data(j) = value;
+        end
+
+
+        % Predict using the trained model
+        prediction = str2double(predict(model, input_data));
+
+        % Display prediction result
+        if prediction == 1
+            resultLabel.Text = 'Prediction Result: Good quality wine';
+        else
+            resultLabel.Text = 'Prediction Result: Bad quality wine';
+        end
+    end
+
+
+    %% Instructions for Users
+    % Add a label to guide users
+    uilabel(fig, 'Position', [20, 520, 360, 22], 'Text', 'Enter wine features and click Predict Quality.', 'FontWeight', 'bold');
+
+
+    %% Additional Features
+    % Future Enhancements (placeholders for extending functionality)
+    % 1. Add a feature to visualize feature importance.
+    % 2. Allow users to save predictions to a file.
+    % 3. Enable loading new datasets dynamically.
+
+
+    %% Input Validation Details
+    % Provide additional guidance for correct input ranges
+    rangesLabel = uilabel(fig, 'Position', [20, 480, 360, 22], 'Text', 'Input values must be within realistic ranges for wine features.', 'FontAngle', 'italic');
+
+
+    %% Placeholder for Future Model Comparison
+    % Include comments for extending the model in the future
+    % Example: "Add support for logistic regression or SVM models."
+
+    %% End of Script
+    % This marks the end of the Wine Quality Predictor function.
+    % Ensure proper documentation and maintainability.
+end
